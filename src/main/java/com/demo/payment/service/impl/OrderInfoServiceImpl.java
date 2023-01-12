@@ -1,9 +1,7 @@
 package com.demo.payment.service.impl;
 
 
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.demo.payment.entity.OrderInfo;
@@ -31,12 +29,13 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     /**
      * 根据产品ID生成订单信息
      * @param productId 产品ID
+     * @param paymentType
      * @return obj
      */
     @Override
-    public OrderInfo getOrderInfoByProductId(Long productId){
+    public OrderInfo getOrderInfoByProductId(Long productId, String paymentType){
 
-        OrderInfo orderInfo = this.getNoPayOrderByProductId(productId);
+        OrderInfo orderInfo = this.getNoPayOrderByProductId(productId, paymentType);
         if (orderInfo != null){
             return orderInfo;
         }
@@ -45,8 +44,9 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         orderInfo.setTitle(product.getTitle());
         orderInfo.setOrderNo(OrderNoUtils.getOrderNo());
         orderInfo.setProductId(productId);
-        orderInfo.setTotalFee(1);
+        orderInfo.setTotalFee(product.getPrice());
         orderInfo.setOrderStatus(OrderStatus.NOTPAY.getType());
+        orderInfo.setPaymentType(paymentType);
         baseMapper.insert(orderInfo);
         return orderInfo;
     }
@@ -110,10 +110,11 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
      * @return list
      */
     @Override
-    public List<OrderInfo> getNoPayOrderByDuration(Integer durationMin) {
+    public List<OrderInfo> getNoPayOrderByDuration(Integer durationMin, String paymentType) {
         Instant instant = Instant.now().minus(Duration.ofMinutes(durationMin));
         LambdaQueryWrapper<OrderInfo> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(OrderInfo::getOrderStatus, OrderStatus.NOTPAY.getType()).le(OrderInfo::getCreateTime, instant);
+        lambdaQueryWrapper.eq(OrderInfo::getOrderStatus, OrderStatus.NOTPAY.getType())
+                .le(OrderInfo::getCreateTime, instant).eq(OrderInfo::getPaymentType, paymentType);
 
         return baseMapper.selectList(lambdaQueryWrapper);
     }
@@ -127,12 +128,14 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
      * 获取未支付订单
      * TODO：匹配用户自己订单
      * @param productId
+     * @param paymentType
      * @return
      */
-    private OrderInfo getNoPayOrderByProductId(Long productId) {
+    private OrderInfo getNoPayOrderByProductId(Long productId, String paymentType) {
         LambdaQueryWrapper<OrderInfo> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(productId !=null ,OrderInfo::getProductId, productId)
-                .eq(OrderInfo::getOrderStatus, OrderStatus.NOTPAY.getType());
+                .eq(OrderInfo::getOrderStatus, OrderStatus.NOTPAY.getType())
+                .eq(OrderInfo::getPaymentType, paymentType);
         return baseMapper.selectOne(queryWrapper);
     }
 

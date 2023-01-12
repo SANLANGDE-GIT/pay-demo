@@ -12,6 +12,7 @@ import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,6 +20,10 @@ import java.util.Map;
 @Slf4j
 public class PaymentInfoServiceImpl extends ServiceImpl<PaymentInfoMapper, PaymentInfo> implements PaymentInfoService {
 
+    /**
+     * 微信支付记录
+     * @param resultInfo
+     */
     @Override
     public void savePaymentInfo(Map<String, Object> resultInfo) {
         PaymentInfo paymentInfo = new PaymentInfo();
@@ -31,6 +36,27 @@ public class PaymentInfoServiceImpl extends ServiceImpl<PaymentInfoMapper, Payme
         JSONObject jsonObject = JSON.parseObject(amount);
         paymentInfo.setPayerTotal(jsonObject.getInteger("payer_total"));
         paymentInfo.setContent((String) resultInfo.get("amount"));
+        baseMapper.insert(paymentInfo);
+    }
+
+    /**
+     * 支付宝 支付记录
+     * @param params
+     */
+    @Override
+    public void savePaymentInfoForAli(Map<String, String> params) {
+        PaymentInfo paymentInfo = new PaymentInfo();
+        paymentInfo.setOrderNo(params.get("out_trade_no"));
+        paymentInfo.setTransactionId(params.get("trade_no"));
+        paymentInfo.setPaymentType(PayType.ALIPAY.getType());
+        paymentInfo.setPaymentType("电脑网站支付");
+        paymentInfo.setTradeState( params.get("trade_status"));
+        String amount = params.get("total_amount");
+        int payerTotal = new BigDecimal(amount).multiply(new BigDecimal("100")).intValue();
+        paymentInfo.setPayerTotal(payerTotal);
+        Gson gson = new Gson();
+        String json = gson.toJson(params, HashMap.class);
+        paymentInfo.setContent(json);
         baseMapper.insert(paymentInfo);
     }
 }

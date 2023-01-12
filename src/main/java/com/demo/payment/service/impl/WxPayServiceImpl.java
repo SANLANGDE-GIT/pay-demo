@@ -4,6 +4,7 @@ import com.demo.payment.config.WxPayConfig;
 import com.demo.payment.entity.OrderInfo;
 import com.demo.payment.entity.RefundInfo;
 import com.demo.payment.enums.OrderStatus;
+import com.demo.payment.enums.PayType;
 import com.demo.payment.enums.wxpay.WxApiType;
 import com.demo.payment.enums.wxpay.WxNotifyType;
 import com.demo.payment.enums.wxpay.WxRefundStatus;
@@ -68,7 +69,7 @@ public class WxPayServiceImpl implements WxPayService {
     public Map<String, Object> getNativePay(Long productId) {
         // 1、 生成订单
         log.info("创建订单");
-        OrderInfo orderInfo = orderInfoService.getOrderInfoByProductId(productId);
+        OrderInfo orderInfo = orderInfoService.getOrderInfoByProductId(productId, PayType.WXPAY.getType());
         String codeUrl = orderInfo.getCodeUrl();
         if(orderInfo != null && StringUtils.isNotBlank(codeUrl)) {
             if (StringUtils.isNotEmpty(codeUrl)) {
@@ -216,8 +217,6 @@ public class WxPayServiceImpl implements WxPayService {
             cancelOrder(orderNo);
             // 更新订单状态
             orderInfoService.updateOrderStatusByOrderNo(orderNo, OrderStatus.CLOSED.getType());
-            // 记录支付日志
-            paymentInfoService.savePaymentInfo(hashMap);
         }
 
     }

@@ -49,7 +49,7 @@ public class RefundInfoServiceImpl extends ServiceImpl<RefundInfoMapper, RefundI
     }
 
     /**
-     * 记录退款记录
+     * 修改退款记录 微信
      * @param content
      */
     @Override
@@ -83,6 +83,11 @@ public class RefundInfoServiceImpl extends ServiceImpl<RefundInfoMapper, RefundI
         baseMapper.update(refundInfo, queryWrapper);
     }
 
+    /**
+     * 获取退款单列表
+     * @param min
+     * @return
+     */
     @Override
     public List<RefundInfo> getNoRefundOrderByDuration(int min) {
         //minutes分钟之前的时间
@@ -91,5 +96,28 @@ public class RefundInfoServiceImpl extends ServiceImpl<RefundInfoMapper, RefundI
         queryWrapper.eq(RefundInfo::getRefundStatus, WxRefundStatus.PROCESSING.getType())
                 .le(RefundInfo::getCreateTime, instant);
         return baseMapper.selectList(queryWrapper);
+    }
+
+    /**
+     * 修改退款记录 支付宝
+     * @param refundNo
+     * @param reason
+     * @param type
+     */
+    @Override
+    public void updateRefundForAliPay(String refundNo, String reason, String type) {
+        //根据退款单编号修改退款单
+        QueryWrapper<RefundInfo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("refund_no", refundNo);
+
+        //设置要修改的字段
+        RefundInfo refundInfo = new RefundInfo();
+
+        //查询退款和申请退款中的返回参数
+        refundInfo.setRefundStatus(type);//退款状态
+        refundInfo.setContentReturn(reason);//将全部响应结果存入数据库的content字段
+
+        //更新退款单
+        baseMapper.update(refundInfo, queryWrapper);
     }
 }

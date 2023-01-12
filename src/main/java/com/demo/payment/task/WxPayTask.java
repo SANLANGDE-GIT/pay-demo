@@ -2,6 +2,7 @@ package com.demo.payment.task;
 
 import com.demo.payment.entity.OrderInfo;
 import com.demo.payment.entity.RefundInfo;
+import com.demo.payment.enums.PayType;
 import com.demo.payment.service.OrderInfoService;
 import com.demo.payment.service.RefundInfoService;
 import com.demo.payment.service.WxPayService;
@@ -30,7 +31,7 @@ public class WxPayTask {
     // @Scheduled(cron = "*/30 * * * * ?")
     public void orderConfirm(){
         log.info("定时查单任务");
-        List<OrderInfo> list = orderInfoService.getNoPayOrderByDuration(DURATION_MIN);
+        List<OrderInfo> list = orderInfoService.getNoPayOrderByDuration(DURATION_MIN, PayType.WXPAY.getType());
 
         for (OrderInfo orderInfo : list) {
             String orderNo = orderInfo.getOrderNo();

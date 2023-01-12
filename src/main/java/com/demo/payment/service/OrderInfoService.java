@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface OrderInfoService extends IService<OrderInfo> {
 
-    OrderInfo getOrderInfoByProductId(Long productId);
+    OrderInfo getOrderInfoByProductId(Long productId, String type);
 
     void saveCodeUrlById(String id, String codeUrl);
 
@@ -17,7 +17,7 @@ public interface OrderInfoService extends IService<OrderInfo> {
 
     String getOrderStatusByOrderNo(String outTradeNo);
 
-    List<OrderInfo> getNoPayOrderByDuration(Integer durationMin);
+    List<OrderInfo> getNoPayOrderByDuration(Integer durationMin, String paymentType);
 
     OrderInfo getOrderInfoByOrderNo(String orderNo);
 }
