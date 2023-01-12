@@ -27,7 +27,7 @@ public class WxPayTask {
     @Resource
     private WxPayService wxPayService;
 
-    @Scheduled(cron = "*/30 * * * * ?")
+    // @Scheduled(cron = "*/30 * * * * ?")
     public void orderConfirm(){
         log.info("定时查单任务");
         List<OrderInfo> list = orderInfoService.getNoPayOrderByDuration(DURATION_MIN);
@@ -44,7 +44,7 @@ public class WxPayTask {
     /**
      * 从第0秒开始每隔30秒执行1次，查询创建超过5分钟，并且未成功的退款单
      */
-    @Scheduled(cron = "0/30 * * * * ?")
+    // @Scheduled(cron = "0/30 * * * * ?")
     public void refundConfirm() throws Exception {
         log.info("refundConfirm 被执行......");
 
